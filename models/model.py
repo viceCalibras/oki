@@ -1,11 +1,11 @@
 import torch.nn as nn
 
 model = nn.Sequential(
-    nn.Linear(4, 8),
+    nn.Linear(3, 9),
     nn.ReLU(),
-    nn.Linear(8, 16),
+    nn.Linear(9, 18),
     nn.ReLU(),
-    nn.Linear(16, 8),
+    nn.Linear(18, 9),
     nn.ReLU(),
-    nn.Linear(8, 4)
+    nn.Linear(9, 2),
 )
