@@ -77,6 +77,7 @@ def train(
         train_loss = 0.0
         for X, y in train_loader:
             X = X.to(device)
+            y = y.to(device)
             # Clear the gradients.
             optimizer.zero_grad()
             # Forward pass.
@@ -99,6 +100,7 @@ def train(
         with torch.no_grad():  # Turn off the gradients for validation.
             for X, y in valid_loader:
                 X = X.to(device)
+                y = y.to(device)
                 # Forward pass.
                 y_hat = model(X)
                 y_hat = torch.squeeze(y_hat)  # To match the dimensions of y.
