@@ -1,0 +1,9 @@
+numpy
+notebook
+ipykernel
+pandas
+torch
+scikit-learn
+tqdm
+matplotlib
+openpyxl
