@@ -20,11 +20,9 @@ class CustomDataset(Dataset):
         return feature, label
 
 
-csv_file_path = "data/thesis_data_cleaned.csv"
+csv_file_path = "data/dataset_cleaned.csv"
 df = pd.read_csv(csv_file_path)
-# features = df[["Ton", "Toff", "Id", "SV"]]
-features = df[["Depth Of Cut", "Feed Rate", "Lenght Of Cut"]]
-# labels = df[["KW", "MRR", "WLT", "Ra"]]
+features = df[["Temperature", "Depth Of Cut", "Feed Rate", "Lenght Of Cut"]]
 labels = df[["Load X", "Load Y"]]
 
 train_features, test_features, train_labels, test_labels = train_test_split(
