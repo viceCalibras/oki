@@ -29,6 +29,7 @@ train_features, test_features, train_labels, test_labels = train_test_split(
     features, labels, test_size=0.1, random_state=42
 )
 
+# TODO(viceCalibras) Parametrize!
 batch_size = 4  # Set your desired batch size
 
 train_dataset = CustomDataset(train_features, train_labels)

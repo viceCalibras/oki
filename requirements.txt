@@ -6,4 +6,3 @@ torch
 scikit-learn
 tqdm
 matplotlib
-openpyxl

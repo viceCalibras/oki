@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     model.to(device)
     trained_model, train_loss, valid_loss = train(
-        model, device, 10, loss_f, optimizer, train_dataloader, test_dataloader
+        model, device, 1000, loss_f, optimizer, train_dataloader, test_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "new_model", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_4_e_1000", train_loss, valid_loss)
