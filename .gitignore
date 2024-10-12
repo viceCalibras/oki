@@ -3,4 +3,5 @@ training/checkpoints/*
 .venv
 .ipynb_checkpoints
 *__pycache__*
-trained_models
+trained_models/*
+data/*
