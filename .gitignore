@@ -2,5 +2,5 @@ logs/*
 training/checkpoints/*
 .venv
 .ipynb_checkpoints
-*/__pycache__/
+*__pycache__*
 trained_models

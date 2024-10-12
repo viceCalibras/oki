@@ -1,10 +1,7 @@
 import gc
 import time
-from typing import Any, List, Tuple, Union
+from typing import List, Tuple, Union
 import torch
-import torch.optim as optim
-from models.model import model
-from data.dataLoader import *
 import pathlib
 import tqdm
 import types
