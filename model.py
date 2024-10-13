@@ -7,15 +7,15 @@ class MLPReg(nn.Module):
         super(MLPReg, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(4, 8),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(8, 16),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(16, 32),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(32, 16),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(16, 8),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.Linear(8, 2),
         )
 
