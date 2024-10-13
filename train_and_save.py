@@ -2,7 +2,7 @@ import gc
 import time
 from typing import List, Tuple, Union
 import torch
-from torch.utils.data import random_split
+from torch.utils.data import random_split, DataLoader
 import pathlib
 import tqdm
 import types
@@ -131,31 +131,34 @@ if __name__ == "__main__":
     print("Device: ", device)
     torch.cuda.empty_cache()
 
-    # Set the loss function and optimization algorithm.
-    loss_f = torch.nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
-
     # Load the data.
     dataset_path = "./data/dataset_train.csv"
     features = ["Temperature", "Depth Of Cut", "Feed Rate", "Lenght Of Cut"]
-    labels = df["Load X", "Load Y"]
+    labels = ["Load X", "Load Y"]
     
-    dataset = SimulationDataset(dataset_path)
+    dataset = SimulationDataset(dataset_path, features, labels)
 
     train_size = int(0.9 * len(dataset))
     validation_size = len(dataset) - train_size
 
-    train_dataset, validation_dataset = random_split(dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42))
+    train_dataset, validation_dataset = random_split(dataset, [train_size, validation_size], generator=torch.Generator().manual_seed(42))
 
-    batch_size = 8 
+    batch_size = 128
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     validation_dataloader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
 
+    # Load the model.
     model = MLPReg()
     model.to(device)
+    
+    # Set the loss function and optimization algorithm.
+    loss_f = torch.nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    
+    # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 10, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 10000, loss_f, optimizer, train_dataloader, validation_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_10_deeper", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_128_e_10000_transformed", train_loss, valid_loss)
