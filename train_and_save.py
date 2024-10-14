@@ -153,16 +153,14 @@ if __name__ == "__main__":
     model.to(device)
     
     # Set the loss function and optimization algorithm.
-    loss_f = torch.nn.MSELoss()
+    loss_f = torch.nn.MSELoss(reduction='mean')
+    # loss_f = torch.nn.HuberLoss(delta=0.2)
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    # optimizer = optim.SGD(
-    #         model.parameters(), momentum=0.99, lr=0.001
-    #     )
 
     
     # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 10000, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 12000, loss_f, optimizer, train_dataloader, validation_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_10000_LeakyReLU_transformed_output_IQR_deeper", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_12000_32_64_32", train_loss, valid_loss)

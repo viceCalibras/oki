@@ -6,17 +6,21 @@ class MLPReg(nn.Module):
         """
         super(MLPReg, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(4, 8),
+            nn.Linear(4, 32),
             nn.LeakyReLU(),
-            nn.Linear(8, 16),
+            # nn.Linear(8, 16),
+            # nn.LeakyReLU(),
+            # nn.Linear(16, 32),
+            # nn.LeakyReLU(),
+            nn.Linear(32, 64),
             nn.LeakyReLU(),
-            nn.Linear(16, 32),
+            nn.Linear(64, 32),
             nn.LeakyReLU(),
-            nn.Linear(32, 16),
-            nn.LeakyReLU(),
-            nn.Linear(16, 8),
-            nn.LeakyReLU(),
-            nn.Linear(8, 2),
+            nn.Linear(32, 2),
+            # nn.LeakyReLU(),
+            # nn.Linear(16, 8),
+            # nn.LeakyReLU(),
+            # nn.Linear(8, 2),
         )
 
     def forward(self, x):
