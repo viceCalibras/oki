@@ -51,6 +51,7 @@ def train(
     optimizer: types.ModuleType,
     train_loader: torch.utils.data.dataloader.DataLoader,
     valid_loader: torch.utils.data.dataloader.DataLoader,
+    feature_weights: Union[torch.tensor, None] = None
 ) -> Tuple[torch.nn.Module, List[float], List[float]]:
     """Performs training of the input model.
 
@@ -62,6 +63,7 @@ def train(
         optimizer: Learning grade optimizer.
         train_loader: PyTorch DataLoader object, iterator through training dataset.
         valid_loader: PyTorch DataLoader object, iterator through validation dataset.
+        feature_weights: A tensor of weights to be multiplied by the features before passing them   to the model.
 
     Returns:
        Trained model and loss function values.
@@ -82,6 +84,9 @@ def train(
             # Clear the gradients.
             optimizer.zero_grad()
             # Forward pass.
+            if feature_weights is not None:
+                feature_weights = feature_weights.to(device)
+                X = feature_weights * X
             y_hat = model(X)
             y_hat = torch.squeeze(y_hat)  # To match the dimensions of y.
             # Compute the loss.
@@ -135,6 +140,8 @@ if __name__ == "__main__":
     dataset_path = "./data/dataset_train.csv"
     features = ["Temperature", "Depth Of Cut", "Feed Rate", "Lenght Of Cut"]
     labels = ["Load X", "Load Y"]
+
+    # feature_weights = torch.tensor([0.8, 1.0, 1.0, 1.0])
     
     dataset = SimulationDataset(dataset_path, features, labels)
 
@@ -153,14 +160,14 @@ if __name__ == "__main__":
     model.to(device)
     
     # Set the loss function and optimization algorithm.
-    loss_f = torch.nn.MSELoss(reduction='mean')
-    # loss_f = torch.nn.HuberLoss(delta=0.2)
-    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    # loss_f = torch.nn.MSELoss(reduction='mean')
+    loss_f = torch.nn.HuberLoss(delta=0.6)
+    optimizer = optim.Adam(model.parameters(), lr=0.00001)
 
     
     # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 12000, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 60000, loss_f, optimizer, train_dataloader, validation_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_12000_32_64_32", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m5_b_8_e_60000_32_64_128_64_huber_6em1", train_loss, valid_loss)
