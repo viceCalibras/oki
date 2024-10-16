@@ -147,10 +147,10 @@ if __name__ == "__main__":
     torch.cuda.empty_cache()
 
     # Load the data.
-    dataset_path = "./data/dataset_roughness_train.csv"
-    # dataset_path = "./data/dataset_train_dropped.csv"
-    # features = ["Temperature", "Feed Rate"]
+    # dataset_path = "./data/dataset_train.csv"
+    # features = ["Temperature", "Depth Of Cut", "Feed Rate", "Lenght Of Cut"]
     # labels = ["Load X", "Load Y"]
+    dataset_path = "./data/dataset_roughness_train.csv"
     features = ["Ra", "Rz", "RSm", "Rt"]
     labels = ["F"]
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     validation_dataloader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
 
-    # Load the model.
+    # Load the model - depending on the dataset.
     # model = MLPRegSimulation()
     model = MLPRegRoughness()
     model.to(device)
@@ -176,10 +176,7 @@ if __name__ == "__main__":
     
     # Set the loss function and optimization algorithm.
     loss_f = torch.nn.MSELoss(reduction='mean')
-    # loss_f = torch.nn.HuberLoss(delta=0.6)
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
-    # optimizer = optim.SGD(
-    #     model.parameters(), momentum=0.99, lr=0.0001)
 
     adaptive_lr_thresh = 0.085
 
