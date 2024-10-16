@@ -6,7 +6,7 @@ from torch.utils.data import random_split, DataLoader
 import pathlib
 import tqdm
 import types
-from model import MLPReg
+from model import MLPRegRoughness, MLPRegSimulation
 import torch.optim as optim
 from dataset import SimulationDataset
 
@@ -51,7 +51,8 @@ def train(
     optimizer: types.ModuleType,
     train_loader: torch.utils.data.dataloader.DataLoader,
     valid_loader: torch.utils.data.dataloader.DataLoader,
-    feature_weights: Union[torch.tensor, None] = None
+    feature_weights: Union[torch.tensor, None] = None,
+    adaptive_lr_thresh: Union[float, None] = None
 ) -> Tuple[torch.nn.Module, List[float], List[float]]:
     """Performs training of the input model.
 
@@ -63,7 +64,8 @@ def train(
         optimizer: Learning grade optimizer.
         train_loader: PyTorch DataLoader object, iterator through training dataset.
         valid_loader: PyTorch DataLoader object, iterator through validation dataset.
-        feature_weights: A tensor of weights to be multiplied by the features before passing them   to the model.
+        feature_weights: A tensor of weights to be multiplied by the features before passing them to the model.
+        adaptive_lr_thresh: Epoch loss threshold below which the lr will be reduced on 1/10 of the input value.
 
     Returns:
        Trained model and loss function values.
@@ -72,7 +74,7 @@ def train(
     train_losses_all = []
     valid_losses_all = []
     time_start = time.time()
-    adaptive_lr = False
+    adaptive_lr_flag = False # On-off flag.
     print("Training the model!")
 
     for epoch in tqdm.trange(epochs):
@@ -94,8 +96,6 @@ def train(
             loss = loss_f(y_hat, y)
             # Backpropagate the loss & compute gradients.
             loss.backward()
-            # Do gradient clipping.
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
             # Update weights.
             optimizer.step()
 
@@ -120,11 +120,12 @@ def train(
 
         valid_loss_in_epoch = valid_loss / len(valid_loader)
         
-        # Adaptive lr.
-        if (train_loss_in_epoch <= 0.015) and (adaptive_lr is False):
-            adaptive_lr = True
-            for param_group in optimizer.param_groups:
-                param_group['lr'] = param_group['lr'] * 0.1
+        # Adaptive learning rate application.
+        if adaptive_lr_thresh is not None:
+            if (train_loss_in_epoch <= adaptive_lr_thresh) and (adaptive_lr_flag is False):
+                adaptive_lr_flag = True
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] = param_group['lr'] * 0.1
 
         print("Epoch", epoch + 1, "complete!"),
         print("\tTraining Loss: ", round(train_loss_in_epoch, 4))
@@ -146,9 +147,12 @@ if __name__ == "__main__":
     torch.cuda.empty_cache()
 
     # Load the data.
-    dataset_path = "./data/dataset_train_dropped.csv"
-    features = ["Temperature", "Feed Rate"]
-    labels = ["Load X", "Load Y"]
+    dataset_path = "./data/dataset_roughness_train.csv"
+    # dataset_path = "./data/dataset_train_dropped.csv"
+    # features = ["Temperature", "Feed Rate"]
+    # labels = ["Load X", "Load Y"]
+    features = ["Ra", "Rz", "Rsk", "Rku", "RSm", "Rt"]
+    labels = ["F"]
 
     # feature_weights = torch.tensor([0.8, 1.0, 1.0, 1.0])
     
@@ -165,12 +169,12 @@ if __name__ == "__main__":
     validation_dataloader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=True)
 
     # Load the model.
-    model = MLPReg()
+    # model = MLPRegSimulation()
+    model = MLPRegRoughness()
     model.to(device)
     
     # Set the loss function and optimization algorithm.
     loss_f = torch.nn.MSELoss(reduction='mean')
-    # loss_f = torch.nn.L1Loss(reduction='mean')
     #  loss_f = torch.nn.HuberLoss(delta=0.6)
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
     # optimizer = optim.SGD(
@@ -180,7 +184,7 @@ if __name__ == "__main__":
     
     # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 30000, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 1000, loss_f, optimizer, train_dataloader, validation_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_30000_32_64_LReLU_2me2_addaptive_lr_dropped", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_1000_32_64_128_roughness", train_loss, valid_loss)
