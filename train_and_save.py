@@ -72,6 +72,7 @@ def train(
     train_losses_all = []
     valid_losses_all = []
     time_start = time.time()
+    adaptive_lr = False
     print("Training the model!")
 
     for epoch in tqdm.trange(epochs):
@@ -93,6 +94,8 @@ def train(
             loss = loss_f(y_hat, y)
             # Backpropagate the loss & compute gradients.
             loss.backward()
+            # Do gradient clipping.
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.1)
             # Update weights.
             optimizer.step()
 
@@ -116,6 +119,12 @@ def train(
                 valid_loss += loss.item()
 
         valid_loss_in_epoch = valid_loss / len(valid_loader)
+        
+        # Adaptive lr.
+        if (train_loss_in_epoch <= 0.015) and (adaptive_lr is False):
+            adaptive_lr = True
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = param_group['lr'] * 0.1
 
         print("Epoch", epoch + 1, "complete!"),
         print("\tTraining Loss: ", round(train_loss_in_epoch, 4))
@@ -137,8 +146,8 @@ if __name__ == "__main__":
     torch.cuda.empty_cache()
 
     # Load the data.
-    dataset_path = "./data/dataset_train.csv"
-    features = ["Temperature", "Depth Of Cut", "Feed Rate", "Lenght Of Cut"]
+    dataset_path = "./data/dataset_train_dropped.csv"
+    features = ["Temperature", "Feed Rate"]
     labels = ["Load X", "Load Y"]
 
     # feature_weights = torch.tensor([0.8, 1.0, 1.0, 1.0])
@@ -160,14 +169,18 @@ if __name__ == "__main__":
     model.to(device)
     
     # Set the loss function and optimization algorithm.
-    # loss_f = torch.nn.MSELoss(reduction='mean')
-    loss_f = torch.nn.HuberLoss(delta=0.6)
-    optimizer = optim.Adam(model.parameters(), lr=0.00001)
+    loss_f = torch.nn.MSELoss(reduction='mean')
+    # loss_f = torch.nn.L1Loss(reduction='mean')
+    #  loss_f = torch.nn.HuberLoss(delta=0.6)
+    optimizer = optim.Adam(model.parameters(), lr=0.0001)
+    # optimizer = optim.SGD(
+            # model.parameters(), momentum=0.99, lr=0.0001
+        # )
 
     
     # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 60000, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 30000, loss_f, optimizer, train_dataloader, validation_dataloader
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m5_b_8_e_60000_32_64_128_64_huber_6em1", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_30000_32_64_LReLU_2me2_addaptive_lr_dropped", train_loss, valid_loss)
