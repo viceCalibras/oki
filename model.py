@@ -26,15 +26,11 @@ class MLPRegRoughness(nn.Module):
         """
         super(MLPRegRoughness, self).__init__()
         self.model = nn.Sequential(
-            nn.Linear(6, 16),
-            nn.LeakyReLU(),
-            nn.Linear(16, 32),
-            nn.LeakyReLU(),
-            nn.Linear(32, 64),
-            nn.LeakyReLU(),
-            nn.Linear(64, 128),
-            nn.LeakyReLU(),
-            nn.Linear(128, 1),
+            nn.Linear(4, 8),
+            nn.ReLU(),
+            nn.Linear(8, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1),
         )
 
     def forward(self, x):

@@ -8,7 +8,7 @@ import tqdm
 import types
 from model import MLPRegRoughness, MLPRegSimulation
 import torch.optim as optim
-from dataset import SimulationDataset
+from dataset import RegressionDataset
 
 
 def save_model_and_loss(
@@ -151,12 +151,12 @@ if __name__ == "__main__":
     # dataset_path = "./data/dataset_train_dropped.csv"
     # features = ["Temperature", "Feed Rate"]
     # labels = ["Load X", "Load Y"]
-    features = ["Ra", "Rz", "Rsk", "Rku", "RSm", "Rt"]
+    features = ["Ra", "Rz", "RSm", "Rt"]
     labels = ["F"]
 
     # feature_weights = torch.tensor([0.8, 1.0, 1.0, 1.0])
     
-    dataset = SimulationDataset(dataset_path, features, labels)
+    dataset = RegressionDataset(dataset_path, features, labels)
 
     train_size = int(0.9 * len(dataset))
     validation_size = len(dataset) - train_size
@@ -172,19 +172,21 @@ if __name__ == "__main__":
     # model = MLPRegSimulation()
     model = MLPRegRoughness()
     model.to(device)
+
     
     # Set the loss function and optimization algorithm.
     loss_f = torch.nn.MSELoss(reduction='mean')
-    #  loss_f = torch.nn.HuberLoss(delta=0.6)
+    # loss_f = torch.nn.HuberLoss(delta=0.6)
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
     # optimizer = optim.SGD(
-            # model.parameters(), momentum=0.99, lr=0.0001
-        # )
+    #     model.parameters(), momentum=0.99, lr=0.0001)
+
+    adaptive_lr_thresh = 0.085
 
     
     # Train and save the model.
     trained_model, train_loss, valid_loss = train(
-        model, device, 1000, loss_f, optimizer, train_dataloader, validation_dataloader
+        model, device, 8000, loss_f, optimizer, train_dataloader, validation_dataloader, adaptive_lr_thresh=adaptive_lr_thresh
     )
 
-    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_1000_32_64_128_roughness", train_loss, valid_loss)
+    save_model_and_loss("./trained_models", model, "lr_1_e_m4_b_8_e_8000_roughness_adapt_lr", train_loss, valid_loss)
